@@ -11,9 +11,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@prisma/client": "^6.11.1",
+    "@prisma/client": "^6.10",
     "dotenv": "^17.2.0",
-    "prisma": "^6.11.1",
+    "prisma": "^6.10",
     "tsx": "^4.20.3"
   },
   "dependencies": {
