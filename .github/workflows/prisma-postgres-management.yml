@@ -137,7 +137,7 @@ jobs:
           export DATABASE_URL="$CONNECTION_STRING"
 
           # Generate Prisma Client
-          npx prisma generate
+          npx prisma generate --no-engine
 
           # Push schema to database
           npx prisma db push
