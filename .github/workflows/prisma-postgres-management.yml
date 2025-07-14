@@ -72,7 +72,7 @@ jobs:
           RESPONSE=$(curl -s -X GET \
             -H "Authorization: Bearer ${{ env.PRISMA_POSTGRES_SERVICE_TOKEN }}" \
             -H "Content-Type: application/json" \
-            "https://api.prisma.io/projects/${{ env.PRISMA_PROJECT_ID }}/databases")
+            "https://api.prisma.io/v1/projects/${{ env.PRISMA_PROJECT_ID }}/databases")
 
           echo "Looking for database with name: ${{ env.DB_NAME }}"
 
@@ -97,7 +97,7 @@ jobs:
             -H "Authorization: Bearer ${{ env.PRISMA_POSTGRES_SERVICE_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d "{\"name\": \"${{ env.DB_NAME }}\", \"region\": \"us-east-1\"}" \
-            "https://api.prisma.io/projects/${{ env.PRISMA_PROJECT_ID }}/databases")
+            "https://api.prisma.io/v1/projects/${{ env.PRISMA_PROJECT_ID }}/databases")
 
           # Check if response contains an id (success case)
           if echo "$RESPONSE" | grep -q '"id":'; then
@@ -119,28 +119,31 @@ jobs:
             -H "Authorization: Bearer ${{ env.PRISMA_POSTGRES_SERVICE_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{"name":"read_write_key"}' \
-            "https://api.prisma.io/projects/${{ env.PRISMA_PROJECT_ID }}/databases/${{ steps.check-db.outputs.db-id }}/connections")
+            "https://api.prisma.io/v1/projects/${{ env.PRISMA_PROJECT_ID }}/databases/${{ steps.check-db.outputs.db-id }}/connections")
 
           CONNECTION_STRING=$(echo "$CONNECTION_RESPONSE" | jq -r '.connectionString')
           echo "connection-string=$CONNECTION_STRING" >> $GITHUB_OUTPUT
 
       - name: Setup Database Schema
         run: |
-          # Get connection string from appropriate step
+          # Determine correct connection string
           if [ "${{ steps.check-db.outputs.exists }}" = "true" ]; then
             CONNECTION_STRING="${{ steps.get-connection.outputs.connection-string }}"
           else
             CONNECTION_STRING="${{ steps.create-db.outputs.connection-string }}"
           fi
 
-          # Set the DATABASE_URL
-          export DATABASE_URL="$CONNECTION_STRING"
+          # Create .env file with DATABASE_URL
+          echo "DATABASE_URL=$CONNECTION_STRING" > .env
 
-          # Generate Prisma Client
-          npx prisma generate
+          # Install dotenv-cli
+          npm install -g dotenv-cli
+
+          # Generate Prisma Client with env var loaded from .env
+          dotenv -e .env -- npx prisma generate --no-engine
 
           # Push schema to database
-          npx prisma db push
+          dotenv -e .env -- npx prisma db push
 
       - name: Seed Database
         run: |
@@ -208,7 +211,7 @@ jobs:
           RESPONSE=$(curl -s -X GET \
             -H "Authorization: Bearer ${{ env.PRISMA_POSTGRES_SERVICE_TOKEN }}" \
             -H "Content-Type: application/json" \
-            "https://api.prisma.io/projects/${{ env.PRISMA_PROJECT_ID }}/databases")
+            "https://api.prisma.io/v1/projects/${{ env.PRISMA_PROJECT_ID }}/databases")
 
           echo "Looking for database with name: ${{ env.DB_NAME }}"
 
@@ -220,7 +223,7 @@ jobs:
             DELETE_RESPONSE=$(curl -s -X DELETE \
               -H "Authorization: Bearer ${{ env.PRISMA_POSTGRES_SERVICE_TOKEN }}" \
               -H "Content-Type: application/json" \
-              "https://api.prisma.io/projects/${{ env.PRISMA_PROJECT_ID }}/databases/$DB_EXISTS")
+              "https://api.prisma.io/v1/projects/${{ env.PRISMA_PROJECT_ID }}/databases/$DB_EXISTS")
             
             echo "Delete API Response: $DELETE_RESPONSE"
             
