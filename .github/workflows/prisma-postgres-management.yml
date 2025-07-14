@@ -126,21 +126,24 @@ jobs:
 
       - name: Setup Database Schema
         run: |
-          # Get connection string from appropriate step
+          # Determine correct connection string
           if [ "${{ steps.check-db.outputs.exists }}" = "true" ]; then
             CONNECTION_STRING="${{ steps.get-connection.outputs.connection-string }}"
           else
             CONNECTION_STRING="${{ steps.create-db.outputs.connection-string }}"
           fi
 
-          # Set the DATABASE_URL
-          export DATABASE_URL="$CONNECTION_STRING"
+          # Create .env file with DATABASE_URL
+          echo "DATABASE_URL=$CONNECTION_STRING" > .env
 
-          # Generate Prisma Client
-          npx prisma generate --no-engine
+          # Install dotenv-cli
+          npm install -g dotenv-cli
+
+          # Generate Prisma Client with env var loaded from .env
+          dotenv -e .env -- npx prisma generate --no-engine
 
           # Push schema to database
-          npx prisma db push
+          dotenv -e .env -- npx prisma db push
 
       - name: Seed Database
         run: |
