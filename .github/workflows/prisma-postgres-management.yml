@@ -97,7 +97,7 @@ jobs:
             -H "Authorization: Bearer ${{ env.PRISMA_POSTGRES_SERVICE_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d "{\"name\": \"${{ env.DB_NAME }}\", \"region\": \"us-east-1\"}" \
-            "https://api.prisma.io/v1/projects/${{ env.PRISMA_PROJECT_ID }}/databases")
+            "https://api.prisma.io/projects/${{ env.PRISMA_PROJECT_ID }}/databases")
 
           # Check if response contains an id (success case)
           if echo "$RESPONSE" | grep -q '"id":'; then
@@ -119,7 +119,7 @@ jobs:
             -H "Authorization: Bearer ${{ env.PRISMA_POSTGRES_SERVICE_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{"name":"read_write_key"}' \
-            "https://api.prisma.io/v1/projects/${{ env.PRISMA_PROJECT_ID }}/databases/${{ steps.check-db.outputs.db-id }}/connections")
+            "https://api.prisma.io/projects/${{ env.PRISMA_PROJECT_ID }}/databases/${{ steps.check-db.outputs.db-id }}/connections")
 
           CONNECTION_STRING=$(echo "$CONNECTION_RESPONSE" | jq -r '.connectionString')
           echo "connection-string=$CONNECTION_STRING" >> $GITHUB_OUTPUT
@@ -135,8 +135,6 @@ jobs:
 
           # Set the DATABASE_URL
           export DATABASE_URL="$CONNECTION_STRING"
-
-          echo "DATABASE_URL=$DATABASE_URL"
 
           # Generate Prisma Client
           npx prisma generate --no-engine
@@ -210,7 +208,7 @@ jobs:
           RESPONSE=$(curl -s -X GET \
             -H "Authorization: Bearer ${{ env.PRISMA_POSTGRES_SERVICE_TOKEN }}" \
             -H "Content-Type: application/json" \
-            "https://api.prisma.io/v1/projects/${{ env.PRISMA_PROJECT_ID }}/databases")
+            "https://api.prisma.io/projects/${{ env.PRISMA_PROJECT_ID }}/databases")
 
           echo "Looking for database with name: ${{ env.DB_NAME }}"
 
@@ -222,7 +220,7 @@ jobs:
             DELETE_RESPONSE=$(curl -s -X DELETE \
               -H "Authorization: Bearer ${{ env.PRISMA_POSTGRES_SERVICE_TOKEN }}" \
               -H "Content-Type: application/json" \
-              "https://api.prisma.io/v1/projects/${{ env.PRISMA_PROJECT_ID }}/databases/$DB_EXISTS")
+              "https://api.prisma.io/projects/${{ env.PRISMA_PROJECT_ID }}/databases/$DB_EXISTS")
             
             echo "Delete API Response: $DELETE_RESPONSE"
             
