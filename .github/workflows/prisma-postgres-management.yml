@@ -120,7 +120,7 @@ jobs:
             CONNECTION_STRING="${{ steps.create-db.outputs.connection-string }}"
           fi
           export DATABASE_URL="$CONNECTION_STRING"
-          npm run queries
+          npm run seed
 
       - name: Comment on PR with database info
         if: success() && github.event_name == 'pull_request'
