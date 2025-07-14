@@ -155,7 +155,7 @@ jobs:
           export DATABASE_URL="$CONNECTION_STRING"
 
           # Run the seed script
-          npm run queries
+          npm run seed
 
       - name: Comment PR
         if: success() && github.event_name == 'pull_request'
