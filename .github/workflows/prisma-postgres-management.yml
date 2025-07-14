@@ -136,6 +136,8 @@ jobs:
           # Set the DATABASE_URL
           export DATABASE_URL="$CONNECTION_STRING"
 
+          echo "DATABASE_URL=$DATABASE_URL"
+
           # Generate Prisma Client
           npx prisma generate --no-engine
 
